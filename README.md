@@ -51,7 +51,7 @@ golang-backend-roadmap/
 | 2 | [Inventory Management](./05-project-inventory-management/) | Transactions, repository pattern, relational design | Documented |
 | 3 | [Booking System](./06-project-booking-system/) | Auth, scheduling, background jobs | Documented |
 | 4 | [Digital Wallet](./07-project-digital-wallet/) | Financial consistency, Redis, concurrency | Documented |
-| 5 | [File Management](./08-project-file-management/) | Object storage, streaming, multipart upload | Not started |
+| 5 | [File Management](./08-project-file-management/) | Object storage, streaming, multipart upload | Documented |
 | 6 | [Notification Service](./09-project-notification-service/) | Queues, workers, retries, cron | Not started |
 | 7 | [Auth Service](./10-project-auth-service/) | OAuth, RBAC, token rotation, reusable service | Not started |
 | 8 | [AI Prompt Management](./11-project-ai-prompt-management/) | Modular architecture, API keys, versioning | Not started |
