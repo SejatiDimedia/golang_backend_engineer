@@ -53,7 +53,7 @@ golang-backend-roadmap/
 | 4 | [Digital Wallet](./07-project-digital-wallet/) | Financial consistency, Redis, concurrency | Documented |
 | 5 | [File Management](./08-project-file-management/) | Object storage, streaming, multipart upload | Documented |
 | 6 | [Notification Service](./09-project-notification-service/) | Queues, workers, retries, cron | Documented |
-| 7 | [Auth Service](./10-project-auth-service/) | OAuth, RBAC, token rotation, reusable service | Not started |
+| 7 | [Auth Service](./10-project-auth-service/) | OAuth, RBAC, token rotation, reusable service | Documented |
 | 8 | [AI Prompt Management](./11-project-ai-prompt-management/) | Modular architecture, API keys, versioning | Not started |
 
 Status is updated as each project moves through `Not started → In progress → Documented → Refactored`.

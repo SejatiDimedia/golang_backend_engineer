@@ -2,10 +2,11 @@
 
 Format penulisan didasarkan pada [Keep a Changelog](https://keepachangelog.com/).
 
-## [Planned Revisit] — Triggered by Project 6 (Notification Service)
+## [Planned Revisit] — Triggered by Project 6 & 7
 
 ### Planned
-- **Retrofit Notification Integration:** Rencana mengganti fitur log stub notifikasi bawaan pada Booking System dengan integrasi client HTTP memanggil endpoint `POST /notifications` asinkron milik Notification Service (Project 6) ketika booking berhasil dibuat atau dibatalkan.
+- **Retrofit Notification Integration (Project 6):** Rencana mengganti fitur log stub notifikasi bawaan pada Booking System dengan integrasi client HTTP memanggil endpoint `POST /notifications` asinkron milik Notification Service (Project 6) ketika booking berhasil dibuat atau dibatalkan.
+- **Retrofit Auth Integration (Project 7):** Mengganti auth JWT ad-hoc lokal dengan Offline Token Verification RS256 memanfaatkan `public.key` dari Auth Service (Project 7). Menghapus database users mandiri di Booking System dan menggantinya dengan validasi claims/role yang dikirim langsung dari Auth Service.
 
 ---
 

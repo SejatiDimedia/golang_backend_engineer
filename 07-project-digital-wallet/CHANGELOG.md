@@ -2,6 +2,11 @@
 
 Format penulisan didasarkan pada [Keep a Changelog](https://keepachangelog.com/).
 
+## [Planned Revisit] — Triggered by Project 7 (Auth Service)
+
+### Planned
+- **Retrofit Auth Integration:** Rencana mengganti autentikasi JWT ad-hoc lokal dengan Offline Token Verification RS256 memanfaatkan `public.key` dari Auth Service (Project 7). Rencana ini akan menghapus tabel `users` duplikat di Digital Wallet Service dan mempercayakan data otorisasi user secara sentral.
+
 ---
 
 ## [1.0.0] — 2026-06-29 — Initial Release

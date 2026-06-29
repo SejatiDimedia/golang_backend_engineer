@@ -2,6 +2,11 @@
 
 Semua perubahan penting pada proyek Notification Service akan dicatat di dokumen ini.
 
+## [Planned Revisit] — Triggered by Project 7 (Auth Service)
+
+### Planned
+- **Retrofit Auth Integration:** Rencana mengganti middleware JWT ad-hoc lokal dan endpoint user register/login dengan Offline Token Verification RS256 memanfaatkan `public.key` dari Auth Service (Project 7).
+
 ---
 
 ## [1.0.0] - 2026-06-29
