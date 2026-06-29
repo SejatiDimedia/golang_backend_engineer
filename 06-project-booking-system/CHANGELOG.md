@@ -2,6 +2,11 @@
 
 Format penulisan didasarkan pada [Keep a Changelog](https://keepachangelog.com/).
 
+## [Planned Revisit] — Triggered by Project 6 (Notification Service)
+
+### Planned
+- **Retrofit Notification Integration:** Rencana mengganti fitur log stub notifikasi bawaan pada Booking System dengan integrasi client HTTP memanggil endpoint `POST /notifications` asinkron milik Notification Service (Project 6) ketika booking berhasil dibuat atau dibatalkan.
+
 ---
 
 ## [1.0.0] — 2026-06-29 — Initial Release
