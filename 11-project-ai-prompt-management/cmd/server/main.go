@@ -137,7 +137,7 @@ func main() {
 	})
 
 	// Swagger UI route
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.InstanceName("swagger")))
 
 	// User / Admin dashboard endpoints (JWT Protected - Offline RS256 Verification)
 	adminRoutes := r.Group("/api/v1")
