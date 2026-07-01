@@ -13,6 +13,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	
+	// Import docs untuk Swagger UI loader
+	_ "github.com/timurdian/prompt-management/docs"
+	
 	"github.com/timurdian/prompt-management/internal/config"
 	"github.com/timurdian/prompt-management/internal/entity"
 	"github.com/timurdian/prompt-management/internal/handler"
@@ -22,6 +28,31 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
+
+// @title           AI Prompt Management API
+// @version         1.0
+// @description     This is a production-grade multi-tenant AI Prompt Management API with Redis caching and offline JWT verification.
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.url    http://www.swagger.io/support
+// @contact.email  support@swagger.io
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost:8082
+// @BasePath  /api/v1
+
+// @securityDefinitions.apikey  ApiKeyAuth
+// @in                          header
+// @name                        Authorization
+// @description                 Paste your JWT token in the format "Bearer <token>"
+
+// @securityDefinitions.apikey  ClientApiKeyAuth
+// @in                          header
+// @name                        Authorization
+// @description                 Paste your API Key in the format "Bearer prompt_live_<key>"
 
 func main() {
 	// 1. Load Dotenv
@@ -105,6 +136,9 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"status": "UP"})
 	})
 
+	// Swagger UI route
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	// User / Admin dashboard endpoints (JWT Protected - Offline RS256 Verification)
 	adminRoutes := r.Group("/api/v1")
 	adminRoutes.Use(jwtMiddleware.AuthRequired())
@@ -148,15 +182,12 @@ func main() {
 	<-quit
 	log.Println("Shutdown signal received, shutting down gracefully...")
 
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	// Graceful shutdown context
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer shutdownCancel()
 
 	if err := srv.Shutdown(shutdownCtx); err != nil {
-		log.Fatalf("Fatal: server forced to shutdown: %v", err)
+		log.Fatalf("Fatal: Server forced to shutdown: %v", err)
 	}
-
-	// Stop background workers
-	cancel()
-	_ = rdb.Close()
-	log.Println("AI Prompt Management API stopped cleanly. Goodbye!")
+	log.Println("Server gracefully stopped")
 }

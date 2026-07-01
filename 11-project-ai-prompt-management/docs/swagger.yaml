@@ -1,0 +1,728 @@
+basePath: /api/v1
+definitions:
+  entity.AnalyticsLog:
+    properties:
+      api_key_id:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      latency_ms:
+        type: integer
+      prompt_id:
+        type: integer
+      response_code:
+        type: integer
+      token_estimate:
+        type: integer
+    type: object
+  entity.ApiKey:
+    properties:
+      created_at:
+        type: string
+      expires_at:
+        type: string
+      id:
+        type: integer
+      masked_key:
+        description: prompt_live_xxxx...1234
+        type: string
+      name:
+        type: string
+      workspace_id:
+        type: integer
+    type: object
+  entity.Prompt:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        type: string
+      versions:
+        items:
+          $ref: '#/definitions/entity.PromptVersion'
+        type: array
+      workspace_id:
+        type: integer
+    type: object
+  entity.PromptVersion:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      prompt_id:
+        type: integer
+      prompt_text:
+        type: string
+      status:
+        description: '''DRAFT'', ''ACTIVE'''
+        type: string
+      version_number:
+        type: integer
+    type: object
+  entity.Workspace:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.CompilePromptReq:
+    properties:
+      variables:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  handler.CreateApiKeyReq:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  handler.CreatePromptReq:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      workspace_id:
+        type: integer
+    required:
+    - name
+    - workspace_id
+    type: object
+  handler.CreateVersionReq:
+    properties:
+      prompt_text:
+        type: string
+    required:
+    - prompt_text
+    type: object
+  handler.CreateWorkspaceReq:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+host: localhost:8082
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a production-grade multi-tenant AI Prompt Management API with
+    Redis caching and offline JWT verification.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: AI Prompt Management API
+  version: "1.0"
+paths:
+  /client/prompts/{id}/compile:
+    post:
+      consumes:
+      - application/json
+      description: Replaces placeholders {{var}} in the active prompt version with
+        values. Requires API Key authentication.
+      parameters:
+      - description: Prompt ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Variables mapping
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CompilePromptReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns compiled_prompt and token_estimate
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid payload
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Invalid API key or forbidden access
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Prompt or active version not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ClientApiKeyAuth: []
+      summary: Compile prompt template (Client server-to-server)
+      tags:
+      - Client API
+  /prompts:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new prompt inside a workspace. Requires admin/member
+        JWT authorization.
+      parameters:
+      - description: Prompt details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreatePromptReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entity.Prompt'
+        "400":
+          description: Invalid request payload
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden access to workspace
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new prompt
+      tags:
+      - Prompts
+  /prompts/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve prompt metadata by ID. Requires JWT authorization.
+      parameters:
+      - description: Prompt ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Prompt'
+        "400":
+          description: Invalid ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Prompt not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get prompt details
+      tags:
+      - Prompts
+  /prompts/{id}/versions:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new draft version snapshot of a prompt. Requires JWT
+        authorization.
+      parameters:
+      - description: Prompt ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Version details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateVersionReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entity.PromptVersion'
+        "400":
+          description: Invalid ID or payload
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Prompt not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new prompt version
+      tags:
+      - Prompts
+  /prompts/{id}/versions/{version_number}/activate:
+    put:
+      consumes:
+      - application/json
+      description: Promotes a draft version of a prompt to ACTIVE status. Requires
+        JWT authorization.
+      parameters:
+      - description: Prompt ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Version Number
+        in: path
+        name: version_number
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Prompt version activated successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Prompt not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Activate a prompt version
+      tags:
+      - Prompts
+  /workspaces:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new workspace. The creator automatically becomes the
+        workspace Admin. Requires JWT authorization.
+      parameters:
+      - description: Workspace name
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateWorkspaceReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entity.Workspace'
+        "400":
+          description: Invalid request payload
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new workspace
+      tags:
+      - Workspaces
+  /workspaces/{id}/analytics:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves logs of prompt compiler executions (latency, token estimates).
+        Requires workspace Admin/Member JWT authorization.
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.AnalyticsLog'
+            type: array
+        "400":
+          description: Invalid workspace ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get workspace execution analytics logs
+      tags:
+      - Analytics
+  /workspaces/{id}/api-keys:
+    get:
+      consumes:
+      - application/json
+      description: Lists all API Keys generated for a workspace (masked for security).
+        Requires workspace Admin JWT authorization.
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.ApiKey'
+            type: array
+        "400":
+          description: Invalid workspace ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get workspace API Keys
+      tags:
+      - API Keys
+    post:
+      consumes:
+      - application/json
+      description: Generates a new API Key for client integration. The key string
+        is only shown once in the response. Requires workspace Admin JWT authorization.
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Key descriptor name
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateApiKeyReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Returns raw api_key, masked_key, id, and expires_at
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden access to workspace
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Create API Key for workspace
+      tags:
+      - API Keys
+  /workspaces/{id}/api-keys/{key_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes and revokes an API Key, invalidating it from cache instantly.
+        Requires workspace Admin JWT authorization.
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: API Key ID
+        in: path
+        name: key_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: API Key revoked successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid input IDs
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Revoke an API Key
+      tags:
+      - API Keys
+  /workspaces/{id}/prompts:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all prompts inside a specific workspace. Requires JWT
+        authorization.
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.Prompt'
+            type: array
+        "400":
+          description: Invalid workspace ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: List workspace prompts
+      tags:
+      - Prompts
+securityDefinitions:
+  ApiKeyAuth:
+    description: Paste your JWT token in the format "Bearer <token>"
+    in: header
+    name: Authorization
+    type: apiKey
+  ClientApiKeyAuth:
+    description: Paste your API Key in the format "Bearer prompt_live_<key>"
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
